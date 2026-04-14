@@ -1,317 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Study OS - Full Edition</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { 
-            --bg: #f4f7f9; --card: #ffffff; --text: #2d3436; 
-            --accent: #0984e3; --border: #dfe6e9; --success: #27ae60; --danger: #d63031;
-        }
-        .dark-theme { 
-            --bg: #121212; --card: #1e1e1e; --text: #f5f6fa; 
-            --accent: #74b9ff; --border: #353b48; 
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Study OS - Full Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --bg: #f4f7f9; --card: #ffffff; --text: #2d3436; 
+            --accent: #0984e3; --border: #dfe6e9; --success: #27ae60; --danger: #d63031;
+        }
+        .dark-theme { 
+            --bg: #121212; --card: #1e1e1e; --text: #f5f6fa; 
+            --accent: #74b9ff; --border: #353b48; 
+        }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; transition: 0.3s; }
-        
-        /* Header & Daily Quote Area */
-        header { display: flex; justify-content: space-between; align-items: flex-start; background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; position: relative; }
-        .header-left { flex: 1; }
-        .quote-container { text-align: right; max-width: 350px; flex: 1; }
-        #daily-quote { font-style: italic; font-size: 1em; color: var(--accent); margin-bottom: 10px; font-weight: 500; min-height: 40px; }
-        
-        /* Charts Section */
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-        .chart-card { background: var(--card); padding: 15px; border-radius: 12px; height: 260px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
-        /* Main Rota Grid */
-        .rota-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-        .shift-card { background: var(--card); padding: 20px; border-radius: 12px; border-top: 5px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.2s; }
-        .shift-card:hover { transform: translateY(-5px); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
-        
-        /* Utility Toolboxes */
-        .tool-box { display: inline-flex; align-items: center; background: var(--bg); padding: 10px 15px; border-radius: 10px; gap: 10px; margin-top: 10px; border: 1px solid var(--border); margin-right: 10px; }
-        #stopwatch { font-family: monospace; font-size: 1.3em; font-weight: bold; min-width: 90px; }
-        
-        button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 16px; font-weight: 600; transition: 0.2s; }
-        .mini-btn { background: var(--accent); color: white; font-size: 0.85em; }
-        .reset-btn { background: #636e72; color: white; }
-        .stop-alarm-active { background: var(--danger); color: white; animation: blink 1s infinite; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; transition: 0.3s; }
+        
+        /* Header & Daily Quote Area */
+        header { display: flex; justify-content: space-between; align-items: flex-start; background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; position: relative; }
+        .header-left { flex: 1; }
+        .quote-container { text-align: right; max-width: 350px; flex: 1; }
+        #daily-quote { font-style: italic; font-size: 1em; color: var(--accent); margin-bottom: 10px; font-weight: 500; min-height: 40px; }
+        
+        /* Charts Section */
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .chart-card { background: var(--card); padding: 15px; border-radius: 12px; height: 260px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        /* Main Rota Grid */
+        .rota-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .shift-card { background: var(--card); padding: 20px; border-radius: 12px; border-top: 5px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .shift-card:hover { transform: translateY(-5px); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
+        
+        /* Utility Toolboxes */
+        .tool-box { display: inline-flex; align-items: center; background: var(--bg); padding: 10px 15px; border-radius: 10px; gap: 10px; margin-top: 10px; border: 1px solid var(--border); margin-right: 10px; }
+        #stopwatch { font-family: monospace; font-size: 1.3em; font-weight: bold; min-width: 90px; }
+        
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 16px; font-weight: 600; transition: 0.2s; }
+        .mini-btn { background: var(--accent); color: white; font-size: 0.85em; }
+        .reset-btn { background: #636e72; color: white; }
+        .stop-alarm-active { background: var(--danger); color: white; animation: blink 1s infinite; }
 
-        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* Next Day Targets */
-        .targets-section { background: var(--card); padding: 25px; border-radius: 15px; margin: 30px 0; border: 2px dashed var(--accent); }
-        .target-input { display: flex; gap: 12px; margin-bottom: 20px; }
-        .target-input input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
-        .checklist { list-style: none; padding: 0; }
-        .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
+        /* Next Day Targets */
+        .targets-section { background: var(--card); padding: 25px; border-radius: 15px; margin: 30px 0; border: 2px dashed var(--accent); }
+        .target-input { display: flex; gap: 12px; margin-bottom: 20px; }
+        .target-input input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .checklist { list-style: none; padding: 0; }
+        .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
 
-        /* Footer Controls */
-        footer { margin-top: 50px; padding: 30px; border-top: 2px solid var(--border); text-align: center; }
-        .action-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .btn-save { background: var(--success); color: white; padding: 15px 30px; font-size: 1em; }
-        
-        @media print { .no-print { display: none !important; } }
-    </style>
+        /* Footer Controls */
+        footer { margin-top: 50px; padding: 30px; border-top: 2px solid var(--border); text-align: center; }
+        .action-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-save { background: var(--success); color: white; padding: 15px 30px; font-size: 1em; }
+        
+        @media print { .no-print { display: none !important; } }
+    </style>
 </head>
 <body class="light-theme">
 
-    <header class="no-print">
-        <div class="header-left">
-            <h1 id="rota-display-title" style="margin:0">Rota 1: Focus Active</h1>
-            <p id="date-display" style="margin:5px 0; opacity:0.7"></p>
-            
-            <div class="tool-box">
-                <span id="stopwatch">00:00:00</span>
-                <button onclick="toggleStopwatch()" id="sw-btn" class="mini-btn">Start Focus</button>
-                <button onclick="resetStopwatch()" class="mini-btn reset-btn">Reset</button>
-            </div>
+    <header class="no-print">
+        <div class="header-left">
+            <h1 id="rota-display-title" style="margin:0">Rota 1: Focus Active</h1>
+            <p id="date-display" style="margin:5px 0; opacity:0.7"></p>
+            
+            <div class="tool-box">
+                <span id="stopwatch">00:00:00</span>
+                <button onclick="toggleStopwatch()" id="sw-btn" class="mini-btn">Start Focus</button>
+                <button onclick="resetStopwatch()" class="mini-btn reset-btn">Reset</button>
+            </div>
 
-            <div class="tool-box">
-                <input type="time" id="alarm-time">
-                <button onclick="setAlarm()" class="mini-btn">Set Alarm</button>
-                <button onclick="resetAlarm()" class="mini-btn reset-btn">Reset</button>
-                <button id="stop-alarm-btn" onclick="stopAlarmSound()" class="stop-alarm-active" style="display:none;">STOP ALARM</button>
-            </div>
-        </div>
+            <div class="tool-box">
+                <input type="time" id="alarm-time">
+                <button onclick="setAlarm()" class="mini-btn">Set Alarm</button>
+                <button onclick="resetAlarm()" class="mini-btn reset-btn">Reset</button>
+                <button id="stop-alarm-btn" onclick="stopAlarmSound()" class="stop-alarm-active" style="display:none;">STOP ALARM</button>
+            </div>
+        </div>
 
-        <div class="quote-container">
-            <p id="daily-quote">"Loading inspiration..."</p>
-            <button onclick="toggleTheme()" style="background:transparent; border:1px solid var(--accent); color:var(--text); padding:5px 10px; font-size:0.8em">🌓 Toggle Theme</button>
-        </div>
-    </header>
+        <div class="quote-container">
+            <p id="daily-quote">"Loading inspiration..."</p>
+            <button onclick="toggleTheme()" style="background:transparent; border:1px solid var(--accent); color:var(--text); padding:5px 10px; font-size:0.8em">🌓 Toggle Theme</button>
+        </div>
+    </header>
 
-    <main>
-        <div class="charts-grid no-print">
-            <div class="chart-card"><canvas id="progressChart"></canvas></div>
-            <div class="chart-card"><canvas id="timeChart"></canvas></div>
-        </div>
+    <main>
+        <div class="charts-grid no-print">
+            <div class="chart-card"><canvas id="progressChart"></canvas></div>
+            <div class="chart-card"><canvas id="timeChart"></canvas></div>
+        </div>
 
-        <div id="schedule-container" class="rota-container"></div>
+        <div id="schedule-container" class="rota-container"></div>
 
-        <section class="targets-section no-print">
-            <h3>🎯 Next Day Strategy & Checklist</h3>
-            <div class="target-input">
-                <input type="text" id="target-text" placeholder="Write a specific goal for tomorrow...">
-                <button onclick="addTarget()" class="mini-btn">Add Target</button>
-            </div>
-            <ul id="target-list" class="checklist"></ul>
-        </section>
-    </main>
+        <section class="targets-section no-print">
+            <h3>🎯 Next Day Strategy & Checklist</h3>
+            <div class="target-input">
+                <input type="text" id="target-text" placeholder="Write a specific goal for tomorrow...">
+                <button onclick="addTarget()" class="mini-btn">Add Target</button>
+            </div>
+            <ul id="target-list" class="checklist"></ul>
+        </section>
+    </main>
 
-    <footer class="no-print">
-        <div style="font-size: 1.5em; font-weight: bold;">
-            Rota Total Progress: <span id="weekly-total" style="color:var(--success)">0.0</span> hrs
-        </div>
-        <div class="action-group">
-            <button class="btn-save" onclick="saveData()">💾 SAVE PROGRESS</button>
-            <button class="mini-btn" style="background:#34495e" onclick="exportCSV()">📊 EXPORT EXCEL</button>
-            <button class="mini-btn" style="background:#e67e22" onclick="startNewRota()">🔄 START NEW ROTA</button>
-            <button class="mini-btn" style="background:#7f8c8d" onclick="window.print()">🖨️ PRINT PDF</button>
-        </div>
-    </footer>
+    <footer class="no-print">
+        <div style="font-size: 1.5em; font-weight: bold;">
+            Rota Total Progress: <span id="weekly-total" style="color:var(--success)">0.0</span> hrs
+        </div>
+        <div class="action-group">
+            <button class="btn-save" onclick="saveData()">💾 SAVE PROGRESS</button>
+            <button class="mini-btn" style="background:#34495e" onclick="exportCSV()">📊 EXPORT EXCEL</button>
+            <button class="mini-btn" style="background:#e67e22" onclick="startNewRota()">🔄 START NEW ROTA</button>
+            <button class="mini-btn" style="background:#7f8c8d" onclick="window.print()">🖨️ PRINT PDF</button>
+        </div>
+    </footer>
 
-    <audio id="alarm-sound" loop src="https://actions.google.com/sounds/v1/alarms/alarm_clock_ringing_beeps.ogg"></audio>
+    <audio id="alarm-sound" loop src="https://actions.google.com/sounds/v1/alarms/alarm_clock_ringing_beeps.ogg"></audio>
 
-    <script>
-        // SHIFT DATA DEFINITION
-        const shiftData = [
-            { id: "M1", name: "Morning D1", color: "#FF6384", tasks: [{n:"Office (3hrs)", h:3}, {n:"Study 1", h:3}, {n:"Study 2", h:1.5}] },
-            { id: "M2", name: "Morning D2", color: "#36A2EB", tasks: [{n:"Office (3hrs)", h:3}, {n:"Study 1", h:3}, {n:"Study 2", h:1.5}] },
-            { id: "E3", name: "Evening D3", color: "#FFCE56", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office (3hrs)", h:3}] },
-            { id: "E4", name: "Evening D4", color: "#4BC0C0", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office (3hrs)", h:3}] },
-            { id: "N1", name: "Night 1st", color: "#9966FF", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:4.5}, {n:"Office (3hrs)", h:3}] },
-            { id: "N2", name: "Night 2nd", color: "#FF9F40", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}, {n:"Office (3hrs)", h:3}] },
-            { id: "OD", name: "Off Day", color: "#95a5a6", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}] },
-            { id: "GS", name: "General", color: "#27ae60", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:3.5}] }
-        ];
+    <script>
+        // SHIFT DATA DEFINITION
+        const shiftData = [
+            { id: "M1", name: "Morning D1", color: "#FF6384", tasks: [{n:"Office (3hrs)", h:3}, {n:"Study 1", h:3}, {n:"Study 2", h:1.5}] },
+            { id: "M2", name: "Morning D2", color: "#36A2EB", tasks: [{n:"Office (3hrs)", h:3}, {n:"Study 1", h:3}, {n:"Study 2", h:1.5}] },
+            { id: "E3", name: "Evening D3", color: "#FFCE56", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office (3hrs)", h:3}] },
+            { id: "E4", name: "Evening D4", color: "#4BC0C0", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office (3hrs)", h:3}] },
+            { id: "N1", name: "Night 1st", color: "#9966FF", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:4.5}, {n:"Office (3hrs)", h:3}] },
+            { id: "N2", name: "Night 2nd", color: "#FF9F40", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}, {n:"Office (3hrs)", h:3}] },
+            { id: "OD", name: "Off Day", color: "#95a5a6", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}] },
+            { id: "GS", name: "General", color: "#27ae60", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:3.5}] }
+        ];
 
-        const quotes = [
-            "Your only limit is your mind.",
-            "Focus on being productive instead of busy.",
-            "Success is the sum of small efforts repeated daily.",
-            "Action is the foundational key to all success.",
-            "Don't stop until you're proud.",
-            "Start where you are. Use what you have. Do what you can.",
-            "The secret of getting ahead is getting started."
-        ];
+        const quotes = [
+            "Your only limit is your mind.",
+            "Focus on being productive instead of busy.",
+            "Success is the sum of small efforts repeated daily.",
+            "Action is the foundational key to all success.",
+            "Don't stop until you're proud.",
+            "Start where you are. Use what you have. Do what you can.",
+            "The secret of getting ahead is getting started."
+        ];
 
-        let pChart, tChart, swInterval, swSec = 0, alarmInt;
+        let pChart, tChart, swInterval, swSec = 0, alarmInt;
 
-        window.onload = () => {
-            // Setup Daily Quote
-            document.getElementById('daily-quote').innerText = `"${quotes[new Date().getDay() % quotes.length]}"`;
-            document.getElementById('date-display').innerText = new Date().toDateString();
-            document.getElementById('rota-display-title').innerText = `Rota ${localStorage.getItem('rota_num') || 1}: Active`;
-            
-            renderUI();
-            initCharts();
-            loadAllData();
-        };
+        window.onload = () => {
+            // Setup Daily Quote
+            document.getElementById('daily-quote').innerText = `"${quotes[new Date().getDay() % quotes.length]}"`;
+            document.getElementById('date-display').innerText = new Date().toDateString();
+            document.getElementById('rota-display-title').innerText = `Rota ${localStorage.getItem('rota_num') || 1}: Active`;
+            
+            renderUI();
+            initCharts();
+            loadAllData();
+        };
 
-        function renderUI() {
-            const container = document.getElementById('schedule-container');
-            container.innerHTML = shiftData.map((s, idx) => `
-                <div class="shift-card" style="border-top-color: ${s.color}">
-                    <h3 style="color: ${s.color}; margin-top:0">${s.name}</h3>
-                    <table>
-                        ${s.tasks.map(t => `
-                            <tr>
-                                <td>${t.n}</td>
-                                <td>${t.h}h</td>
-                                <td style="text-align:right">
-                                    <input type="checkbox" class="t-check" data-shift="${idx}" data-hrs="${t.h}" onchange="updateCharts()">
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                </div>
-            `).join('');
-        }
+        function renderUI() {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = shiftData.map((s, idx) => `
+                <div class="shift-card" style="border-top-color: ${s.color}">
+                    <h3 style="color: ${s.color}; margin-top:0">${s.name}</h3>
+                    <table>
+                        ${s.tasks.map(t => `
+                            <tr>
+                                <td>${t.n}</td>
+                                <td>${t.h}h</td>
+                                <td style="text-align:right">
+                                    <input type="checkbox" class="t-check" data-shift="${idx}" data-hrs="${t.h}" onchange="updateCharts()">
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
+            `).join('');
+        }
 
-        function initCharts() {
-            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-            pChart = new Chart(document.getElementById('progressChart'), {
-                type: 'line', data: { labels: shiftData.map(s => s.name), datasets: [{ label: '% Done', data: [], borderColor: '#0984e3', fill: true }] },
-                options: opt
-            });
-            tChart = new Chart(document.getElementById('timeChart'), {
-                type: 'bar', data: { labels: shiftData.map(s => s.name), datasets: [{ data: [], backgroundColor: shiftData.map(s => s.color) }] },
-                options: opt
-            });
-        }
+        function initCharts() {
+            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+            pChart = new Chart(document.getElementById('progressChart'), {
+                type: 'line', data: { labels: shiftData.map(s => s.name), datasets: [{ label: '% Done', data: [], borderColor: '#0984e3', fill: true }] },
+                options: opt
+            });
+            tChart = new Chart(document.getElementById('timeChart'), {
+                type: 'bar', data: { labels: shiftData.map(s => s.name), datasets: [{ data: [], backgroundColor: shiftData.map(s => s.color) }] },
+                options: opt
+            });
+        }
 
-        function updateCharts() {
-            let totalHrs = 0;
-            const pData = []; const tData = [];
-            shiftData.forEach((s, idx) => {
-                const total = document.querySelectorAll(`.t-check[data-shift="${idx}"]`);
-                const done = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
-                let h = 0; done.forEach(c => h += parseFloat(c.dataset.hrs));
-                pData.push(total.length ? (done.length / total.length) * 100 : 0);
-                tData.push(h); totalHrs += h;
-            });
-            pChart.data.datasets[0].data = pData; tChart.data.datasets[0].data = tData;
-            pChart.update(); tChart.update();
-            document.getElementById('weekly-total').innerText = totalHrs.toFixed(1);
-        }
+        function updateCharts() {
+            let totalHrs = 0;
+            const pData = []; const tData = [];
+            shiftData.forEach((s, idx) => {
+                const total = document.querySelectorAll(`.t-check[data-shift="${idx}"]`);
+                const done = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
+                let h = 0; done.forEach(c => h += parseFloat(c.dataset.hrs));
+                pData.push(total.length ? (done.length / total.length) * 100 : 0);
+                tData.push(h); totalHrs += h;
+            });
+            pChart.data.datasets[0].data = pData; tChart.data.datasets[0].data = tData;
+            pChart.update(); tChart.update();
+            document.getElementById('weekly-total').innerText = totalHrs.toFixed(1);
+        }
 
-        // STOPWATCH LOGIC
-        function toggleStopwatch() {
-            const btn = document.getElementById('sw-btn');
-            if (swInterval) {
-                clearInterval(swInterval); swInterval = null; btn.innerText = "Start Focus";
-            } else {
-                swInterval = setInterval(() => {
-                    swSec++;
-                    let h = Math.floor(swSec/3600), m = Math.floor((swSec%3600)/60), s = swSec%60;
-                    document.getElementById('stopwatch').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                }, 1000);
-                btn.innerText = "Stop";
-            }
-        }
-        function resetStopwatch() {
-            clearInterval(swInterval); swInterval = null; swSec = 0;
-            document.getElementById('stopwatch').innerText = "00:00:00";
-            document.getElementById('sw-btn').innerText = "Start Focus";
-        }
+        // STOPWATCH LOGIC
+        function toggleStopwatch() {
+            const btn = document.getElementById('sw-btn');
+            if (swInterval) {
+                clearInterval(swInterval); swInterval = null; btn.innerText = "Start Focus";
+            } else {
+                swInterval = setInterval(() => {
+                    swSec++;
+                    let h = Math.floor(swSec/3600), m = Math.floor((swSec%3600)/60), s = swSec%60;
+                    document.getElementById('stopwatch').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }, 1000);
+                btn.innerText = "Stop";
+            }
+        }
+        function resetStopwatch() {
+            clearInterval(swInterval); swInterval = null; swSec = 0;
+            document.getElementById('stopwatch').innerText = "00:00:00";
+            document.getElementById('sw-btn').innerText = "Start Focus";
+        }
 
-        // ALARM LOGIC
-        function setAlarm() {
-            const time = document.getElementById('alarm-time').value;
-            if(!time) return;
-            if(alarmInt) clearInterval(alarmInt);
-            alert("Alarm set for " + time);
-            alarmInt = setInterval(() => {
-                const now = new Date();
-                const cur = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-                if(cur === time) {
-                    document.getElementById('alarm-sound').play();
-                    document.getElementById('stop-alarm-btn').style.display = "inline-block";
-                }
-            }, 1000);
-        }
-        function stopAlarmSound() {
-            document.getElementById('alarm-sound').pause();
-            document.getElementById('alarm-sound').currentTime = 0;
-            document.getElementById('stop-alarm-btn').style.display = "none";
-        }
-        function resetAlarm() {
-            clearInterval(alarmInt); document.getElementById('alarm-time').value = ""; stopAlarmSound();
-        }
+        // ALARM LOGIC
+        function setAlarm() {
+            const time = document.getElementById('alarm-time').value;
+            if(!time) return;
+            if(alarmInt) clearInterval(alarmInt);
+            alert("Alarm set for " + time);
+            alarmInt = setInterval(() => {
+                const now = new Date();
+                const cur = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+                if(cur === time) {
+                    document.getElementById('alarm-sound').play();
+                    document.getElementById('stop-alarm-btn').style.display = "inline-block";
+                }
+            }, 1000);
+        }
+        function stopAlarmSound() {
+            document.getElementById('alarm-sound').pause();
+            document.getElementById('alarm-sound').currentTime = 0;
+            document.getElementById('stop-alarm-btn').style.display = "none";
+        }
+        function resetAlarm() {
+            clearInterval(alarmInt); document.getElementById('alarm-time').value = ""; stopAlarmSound();
+        }
 
-        // TARGETS LOGIC
-        function addTarget() {
-            const inp = document.getElementById('target-text'); if(!inp.value) return;
-            const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
-            tgs.push({ id: Date.now(), txt: inp.value, done: false });
-            localStorage.setItem('next_day_targets', JSON.stringify(tgs));
-            inp.value = ''; renderTargets();
-        }
-        function renderTargets() {
-            const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
-            document.getElementById('target-list').innerHTML = tgs.map(t => `
-                <li>
-                    <input type="checkbox" ${t.done?'checked':''} onchange="toggleT(${t.id})">
-                    <span style="${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.txt}</span>
-                    <button onclick="delT(${t.id})" style="background:none;color:red;margin-left:auto">✕</button>
-                </li>`).join('');
-        }
-        function toggleT(id) {
-            let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
-            tgs = tgs.map(t => t.id === id ? {...t, done: !t.done} : t);
-            localStorage.setItem('next_day_targets', JSON.stringify(tgs)); renderTargets();
-        }
-        function delT(id) {
-            let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
-            localStorage.setItem('next_day_targets', JSON.stringify(tgs.filter(t => t.id !== id))); renderTargets();
-        }
+        // TARGETS LOGIC
+        function addTarget() {
+            const inp = document.getElementById('target-text'); if(!inp.value) return;
+            const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
+            tgs.push({ id: Date.now(), txt: inp.value, done: false });
+            localStorage.setItem('next_day_targets', JSON.stringify(tgs));
+            inp.value = ''; renderTargets();
+        }
+        function renderTargets() {
+            const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
+            document.getElementById('target-list').innerHTML = tgs.map(t => `
+                <li>
+                    <input type="checkbox" ${t.done?'checked':''} onchange="toggleT(${t.id})">
+                    <span style="${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.txt}</span>
+                    <button onclick="delT(${t.id})" style="background:none;color:red;margin-left:auto">✕</button>
+                </li>`).join('');
+        }
+        function toggleT(id) {
+            let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
+            tgs = tgs.map(t => t.id === id ? {...t, done: !t.done} : t);
+            localStorage.setItem('next_day_targets', JSON.stringify(tgs)); renderTargets();
+        }
+        function delT(id) {
+            let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
+            localStorage.setItem('next_day_targets', JSON.stringify(tgs.filter(t => t.id !== id))); renderTargets();
+        }
 
-        // STORAGE & EXPORT
-        function saveData() {
-            const progress = Array.from(document.querySelectorAll('.t-check')).map(c => c.checked);
-            localStorage.setItem('rota_progress_v4', JSON.stringify(progress));
-            alert("Success: All progress saved!");
-        }
-        function loadAllData() {
-            if(localStorage.getItem('theme_v4') === 'dark') toggleTheme();
-            const saved = JSON.parse(localStorage.getItem('rota_progress_v4'));
-            if(saved) document.querySelectorAll('.t-check').forEach((c, i) => c.checked = saved[i] || false);
-            renderTargets(); updateCharts();
-        }
-        function exportCSV() {
-            let csv = "Shift,Hours\n";
-            shiftData.forEach((s, idx) => {
-                const checked = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
-                let h = 0; checked.forEach(c => h += parseFloat(c.dataset.hrs));
-                csv += `${s.name},${h}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = window.URL.createObjectURL(blob);
-            a.download = `Study_Report_Rota_${localStorage.getItem('rota_num') || 1}.csv`;
-            a.click();
-        }
-        function startNewRota() {
-            if(confirm("Archive this cycle and reset all checkboxes for a new Rota cycle?")) {
-                localStorage.setItem('rota_num', (parseInt(localStorage.getItem('rota_num') || 1) + 1));
-                localStorage.removeItem('rota_progress_v4');
-                location.reload();
-            }
-        }
-        function toggleTheme() {
-            const isDark = document.body.classList.toggle('dark-theme');
-            localStorage.setItem('theme_v4', isDark ? 'dark' : 'light');
-        }
-    </script src="rota-logic.js"></script>
-    
-    <script src="script.js"></script> 
+        // STORAGE & EXPORT
+        function saveData() {
+            const progress = Array.from(document.querySelectorAll('.t-check')).map(c => c.checked);
+            localStorage.setItem('rota_progress_v4', JSON.stringify(progress));
+            alert("Success: All progress saved!");
+        }
+        function loadAllData() {
+            if(localStorage.getItem('theme_v4') === 'dark') toggleTheme();
+            const saved = JSON.parse(localStorage.getItem('rota_progress_v4'));
+            if(saved) document.querySelectorAll('.t-check').forEach((c, i) => c.checked = saved[i] || false);
+            renderTargets(); updateCharts();
+        }
+        function exportCSV() {
+            let csv = "Shift,Hours\n";
+            shiftData.forEach((s, idx) => {
+                const checked = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
+                let h = 0; checked.forEach(c => h += parseFloat(c.dataset.hrs));
+                csv += `${s.name},${h}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = window.URL.createObjectURL(blob);
+            a.download = `Study_Report_Rota_${localStorage.getItem('rota_num') || 1}.csv`;
+            a.click();
+        }
+        function startNewRota() {
+            if(confirm("Archive this cycle and reset all checkboxes for a new Rota cycle?")) {
+                localStorage.setItem('rota_num', (parseInt(localStorage.getItem('rota_num') || 1) + 1));
+                localStorage.removeItem('rota_progress_v4');
+                location.reload();
+            }
+        }
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme_v4', isDark ? 'dark' : 'light');
+        }
+   </script> <script src="rota-logic.js"></script>
+    <script src="script.js"></script> 
 </body>
 </html>
