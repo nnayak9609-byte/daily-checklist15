@@ -25,35 +25,60 @@ let pChart, tChart, swInterval, swSec = 0, alarmInt;
 
 // 3. Initialization
 window.onload = () => {
-    // Set UI elements
+    // Set the Anchor Date if it doesn't exist (Sets it to Midnight today)
+    if(!localStorage.getItem('rota_anchor_date')) {
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        localStorage.setItem('rota_anchor_date', today.toISOString());
+    }
+
     document.getElementById('daily-quote').innerText = `"${quotes[new Date().getDay() % quotes.length]}"`;
     document.getElementById('date-display').innerText = new Date().toDateString();
-    document.getElementById('rota-display-title').innerText = `Rota ${localStorage.getItem('rota_num') || 1}: Active`;
     
     renderUI();
     initCharts();
     loadAllData();
 };
 
-// 4. Core UI Functions
+// 4. Core UI Functions (Now with Auto-Cycle/Day Logic)
 function renderUI() {
+    // CALCULATION LOGIC
+    const anchor = new Date(localStorage.getItem('rota_anchor_date'));
+    const now = new Date();
+    
+    // Normalize to UTC Midnight to ensure accurate calendar day counting
+    const d1 = Date.UTC(anchor.getFullYear(), anchor.getMonth(), anchor.getDate());
+    const d2 = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const totalDaysPassed = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+    
+    const currentCycle = Math.floor(totalDaysPassed / 8) + 1;
+    const currentDayIdx = (totalDaysPassed % 8); 
+
+    // Update Header Title
+    document.getElementById('rota-display-title').innerText = `Cycle ${currentCycle} | Day ${currentDayIdx + 1}: Active`;
+
     const container = document.getElementById('schedule-container');
-    container.innerHTML = shiftData.map((s, idx) => `
-        <div class="shift-card" style="border-top-color: ${s.color}">
-            <h3 style="color: ${s.color}; margin-top:0">${s.name}</h3>
-            <table>
-                ${s.tasks.map(t => `
-                    <tr>
-                        <td>${t.n}</td>
-                        <td>${t.h}h</td>
-                        <td style="text-align:right">
-                            <input type="checkbox" class="t-check" data-shift="${idx}" data-hrs="${t.h}" onchange="updateCharts()">
-                        </td>
-                    </tr>
-                `).join('')}
-            </table>
-        </div>
-    `).join('');
+    container.innerHTML = shiftData.map((s, idx) => {
+        const isToday = (idx === currentDayIdx);
+        return `
+            <div class="shift-card ${isToday ? 'active-day' : ''}" style="border-top-color: ${s.color}">
+                ${isToday ? '<span class="today-badge">TODAY</span>' : ''}
+                <h3 style="color: ${s.color}; margin-top:0">${s.name}</h3>
+                <table>
+                    ${s.tasks.map(t => `
+                        <tr>
+                            <td>${t.n}</td>
+                            <td>${t.h}h</td>
+                            <td style="text-align:right">
+                                <input type="checkbox" class="t-check" data-shift="${idx}" data-hrs="${t.h}" onchange="updateCharts()">
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>
+        `;
+    }).join('');
 }
 
 function initCharts() {
@@ -85,7 +110,7 @@ function updateCharts() {
     document.getElementById('weekly-total').innerText = totalHrs.toFixed(1);
 }
 
-// 5. Stopwatch Logic (with Reset)
+// 5. Stopwatch Logic
 function toggleStopwatch() {
     const btn = document.getElementById('sw-btn');
     if (swInterval) {
@@ -106,7 +131,7 @@ function resetStopwatch() {
     document.getElementById('sw-btn').innerText = "Start Focus";
 }
 
-// 6. Alarm Logic (with Stop & Reset)
+// 6. Alarm Logic
 function setAlarm() {
     const time = document.getElementById('alarm-time').value;
     if(!time) return;
@@ -134,7 +159,7 @@ function resetAlarm() {
     stopAlarmSound();
 }
 
-// 7. Next Day Targets Checklist
+// 7. Next Day Targets
 function addTarget() {
     const inp = document.getElementById('target-text'); if(!inp.value) return;
     const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
@@ -164,7 +189,7 @@ function delT(id) {
     localStorage.setItem('next_day_targets', JSON.stringify(tgs.filter(t => t.id !== id))); renderTargets();
 }
 
-// 8. Data Management (Save, Load, Export, Reset)
+// 8. Data Management
 function saveData() {
     const progress = Array.from(document.querySelectorAll('.t-check')).map(c => c.checked);
     localStorage.setItem('rota_progress_data', JSON.stringify(progress));
@@ -172,9 +197,12 @@ function saveData() {
 }
 
 function loadAllData() {
-    if(localStorage.getItem('theme_pref') === 'dark') toggleTheme();
+    if(localStorage.getItem('theme_pref') === 'dark') document.body.classList.add('dark-theme');
     const saved = JSON.parse(localStorage.getItem('rota_progress_data'));
-    if(saved) document.querySelectorAll('.t-check').forEach((c, i) => c.checked = saved[i] || false);
+    if(saved) {
+        const checks = document.querySelectorAll('.t-check');
+        checks.forEach((c, i) => { if(saved[i]) c.checked = true; });
+    }
     renderTargets(); updateCharts();
 }
 
@@ -188,13 +216,15 @@ function exportCSV() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = window.URL.createObjectURL(blob);
-    a.download = `Study_Report_Rota_${localStorage.getItem('rota_num') || 1}.csv`;
+    a.download = `Study_Report_Export.csv`;
     a.click();
 }
 
 function startNewRota() {
     if(confirm("Start new cycle? This clears checks for a fresh Rota cycle.")) {
-        localStorage.setItem('rota_num', (parseInt(localStorage.getItem('rota_num') || 1) + 1));
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        localStorage.setItem('rota_anchor_date', today.toISOString());
         localStorage.removeItem('rota_progress_data');
         location.reload();
     }
