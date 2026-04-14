@@ -48,6 +48,11 @@
         .checklist { list-style: none; padding: 0; }
         .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
 
+        /* History Table Styling */
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--card); }
+        .history-table th { text-align: left; color: var(--accent); border-bottom: 2px solid var(--border); padding: 12px; }
+        .history-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+
         footer { margin-top: 50px; padding: 30px; border-top: 2px solid var(--border); text-align: center; }
         .action-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .btn-save { background: var(--success); color: white; padding: 15px 30px; font-size: 1em; }
@@ -98,6 +103,13 @@
             </div>
             <ul id="target-list" class="checklist"></ul>
         </section>
+
+        <section class="targets-section no-print" style="border-style: solid; border-color: var(--border);">
+            <h3>📜 Rota History Ledger</h3>
+            <div id="history-list">
+                <p style="opacity: 0.6; text-align: center; padding: 20px;">No completed rotas archived yet.</p>
+            </div>
+        </section>
     </main>
 
     <footer class="no-print">
@@ -115,16 +127,16 @@
     <audio id="alarm-sound" loop src="https://actions.google.com/sounds/v1/alarms/alarm_clock_ringing_beeps.ogg"></audio>
 
     <script>
-        // CORE ROTA DEFINITIONS
+        // ROTA DATA DEFINITION
         const shiftData = [
-            { id: "M1", name: "Morning D1", color: "#FF6384", tasks: [{n:"Office/Core", h:3}, {n:"Daily Essay", h:1.5}, {n:"Current Affairs", h:1.5}, {n:"Fitness/Yoga", h:1}] },
-            { id: "M2", name: "Morning D2", color: "#36A2EB", tasks: [{n:"Office/Core", h:3}, {n:"Daily Essay", h:1.5}, {n:"Current Affairs", h:1.5}, {n:"Fitness/Yoga", h:1}] },
-            { id: "E3", name: "Evening D3", color: "#FFCE56", tasks: [{n:"Core Study", h:2.5}, {n:"Current Affairs", h:2}, {n:"Office/Core", h:3}] },
-            { id: "E4", name: "Evening D4", color: "#4BC0C0", tasks: [{n:"Core Study", h:2.5}, {n:"Current Affairs", h:2}, {n:"Office/Core", h:3}] },
-            { id: "N1", name: "Night 1st", color: "#9966FF", tasks: [{n:"Essay Practice", h:2.5}, {n:"Static Revision", h:4.5}, {n:"Office/Core", h:3}] },
-            { id: "N2", name: "Night 2nd", color: "#FF9F40", tasks: [{n:"Essay Practice", h:2.5}, {n:"Static Revision", h:3.5}, {n:"Office/Core", h:3}] },
-            { id: "OD", name: "Off Day", color: "#95a5a6", tasks: [{n:"Deep Revision", h:3}, {n:"Weekly Review", h:2.5}, {n:"Cooking/Social", h:2}] },
-            { id: "GS", name: "General", color: "#27ae60", tasks: [{n:"General Prep", h:3}, {n:"Mock Test", h:3.5}] }
+            { id: "M1", name: "Morning D1", color: "#FF6384", tasks: [{n:"Office/Core", h:3}, {n:"Essay Writing", h:1.5}, {n:"Current Affairs", h:1.5}] },
+            { id: "M2", name: "Morning D2", color: "#36A2EB", tasks: [{n:"Office/Core", h:3}, {n:"Essay Writing", h:1.5}, {n:"Current Affairs", h:1.5}] },
+            { id: "E3", name: "Evening D3", color: "#FFCE56", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office/Core", h:3}] },
+            { id: "E4", name: "Evening D4", color: "#4BC0C0", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office/Core", h:3}] },
+            { id: "N1", name: "Night 1st", color: "#9966FF", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:4.5}, {n:"Office/Core", h:3}] },
+            { id: "N2", name: "Night 2nd", color: "#FF9F40", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}, {n:"Office/Core", h:3}] },
+            { id: "OD", name: "Off Day", color: "#95a5a6", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}] },
+            { id: "GS", name: "General", color: "#27ae60", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:3.5}] }
         ];
 
         const quotes = [
@@ -170,7 +182,7 @@
         function initCharts() {
             const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
             pChart = new Chart(document.getElementById('progressChart'), {
-                type: 'line', data: { labels: shiftData.map(s => s.name), datasets: [{ label: '% Done', data: [], borderColor: '#0984e3', tension: 0.4, fill: true }] },
+                type: 'line', data: { labels: shiftData.map(s => s.name), datasets: [{ label: '% Done', data: [], borderColor: '#0984e3', fill: true }] },
                 options: opt
             });
             tChart = new Chart(document.getElementById('timeChart'), {
@@ -189,8 +201,7 @@
                 pData.push(total.length ? (done.length / total.length) * 100 : 0);
                 tData.push(h); totalHrs += h;
             });
-            pChart.data.datasets[0].data = pData; 
-            tChart.data.datasets[0].data = tData;
+            pChart.data.datasets[0].data = pData; tChart.data.datasets[0].data = tData;
             pChart.update(); tChart.update();
             document.getElementById('weekly-total').innerText = totalHrs.toFixed(1);
         }
@@ -208,7 +219,6 @@
                 btn.innerText = "Stop";
             }
         }
-
         function resetStopwatch() {
             clearInterval(swInterval); swInterval = null; swSec = 0;
             document.getElementById('stopwatch').innerText = "00:00:00";
@@ -229,13 +239,11 @@
                 }
             }, 1000);
         }
-
         function stopAlarmSound() {
             document.getElementById('alarm-sound').pause();
             document.getElementById('alarm-sound').currentTime = 0;
             document.getElementById('stop-alarm-btn').style.display = "none";
         }
-
         function resetAlarm() {
             clearInterval(alarmInt); document.getElementById('alarm-time').value = ""; stopAlarmSound();
         }
@@ -247,43 +255,74 @@
             localStorage.setItem('next_day_targets', JSON.stringify(tgs));
             inp.value = ''; renderTargets();
         }
-
         function renderTargets() {
             const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
             document.getElementById('target-list').innerHTML = tgs.map(t => `
                 <li>
                     <input type="checkbox" ${t.done?'checked':''} onchange="toggleT(${t.id})">
                     <span style="${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.txt}</span>
-                    <button onclick="delT(${t.id})" style="background:none;color:var(--danger);margin-left:auto">✕</button>
+                    <button onclick="delT(${t.id})" style="background:none;color:red;margin-left:auto">✕</button>
                 </li>`).join('');
         }
-
         function toggleT(id) {
             let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
             tgs = tgs.map(t => t.id === id ? {...t, done: !t.done} : t);
             localStorage.setItem('next_day_targets', JSON.stringify(tgs)); renderTargets();
         }
-
         function delT(id) {
             let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
             localStorage.setItem('next_day_targets', JSON.stringify(tgs.filter(t => t.id !== id))); renderTargets();
         }
 
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('rota_history') || '[]');
+            const container = document.getElementById('history-list');
+            if (history.length === 0) return;
+            container.innerHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr><th>Cycle</th><th>Date</th><th>Total Hrs</th></tr>
+                    </thead>
+                    <tbody>
+                        ${history.map(item => `
+                            <tr>
+                                <td><b>Rota ${item.rota}</b></td>
+                                <td>${item.date}</td>
+                                <td style="color: var(--success); font-weight: bold;">${item.hours} hrs</td>
+                            </tr>
+                        `).reverse().join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        function startNewRota() {
+            const currentTotal = document.getElementById('weekly-total').innerText;
+            const currentRota = localStorage.getItem('rota_num') || 1;
+            if(confirm(`Archive Rota ${currentRota} with ${currentTotal} hours and start a new cycle?`)) {
+                let history = JSON.parse(localStorage.getItem('rota_history') || '[]');
+                history.push({ rota: currentRota, hours: currentTotal, date: new Date().toLocaleDateString() });
+                localStorage.setItem('rota_history', JSON.stringify(history));
+                localStorage.setItem('rota_num', (parseInt(currentRota) + 1));
+                localStorage.removeItem('rota_progress_v4');
+                location.reload();
+            }
+        }
+
         function saveData() {
             const progress = Array.from(document.querySelectorAll('.t-check')).map(c => c.checked);
             localStorage.setItem('rota_progress_v4', JSON.stringify(progress));
-            alert("Progress securely saved to local storage.");
+            alert("Success: All progress saved!");
         }
 
         function loadAllData() {
             if(localStorage.getItem('theme_v4') === 'dark') toggleTheme();
             const saved = JSON.parse(localStorage.getItem('rota_progress_v4'));
             if(saved) document.querySelectorAll('.t-check').forEach((c, i) => c.checked = saved[i] || false);
-            renderTargets(); updateCharts();
+            renderTargets(); updateCharts(); renderHistory();
         }
 
         function exportCSV() {
-            let csv = "Shift,Hours Completed\n";
+            let csv = "Shift,Hours\n";
             shiftData.forEach((s, idx) => {
                 const checked = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
                 let h = 0; checked.forEach(c => h += parseFloat(c.dataset.hrs));
@@ -292,16 +331,8 @@
             const blob = new Blob([csv], { type: 'text/csv' });
             const a = document.createElement('a');
             a.href = window.URL.createObjectURL(blob);
-            a.download = `Study_OS_Report_Rota_${localStorage.getItem('rota_num') || 1}.csv`;
+            a.download = `Study_Report_Rota_${localStorage.getItem('rota_num') || 1}.csv`;
             a.click();
-        }
-
-        function startNewRota() {
-            if(confirm("Archive this cycle and reset all data for a new 8-day Rota?")) {
-                localStorage.setItem('rota_num', (parseInt(localStorage.getItem('rota_num') || 1) + 1));
-                localStorage.removeItem('rota_progress_v4');
-                location.reload();
-            }
         }
 
         function toggleTheme() {
