@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Study OS - Full Edition</title>
+    <title>Elite Study OS - Full Auto-Rotation Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -26,9 +26,12 @@
         .chart-card { background: var(--card); padding: 15px; border-radius: 12px; height: 260px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         
         .rota-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-        .shift-card { background: var(--card); padding: 20px; border-radius: 12px; border-top: 5px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.2s; }
-        .shift-card:hover { transform: translateY(-5px); }
+        .shift-card { background: var(--card); padding: 20px; border-radius: 12px; border-top: 5px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; transition: 0.3s; }
         
+        /* AUTO-CHANGER STYLES */
+        .active-day { border: 3px solid var(--accent) !important; transform: scale(1.02); box-shadow: 0 10px 20px rgba(9, 132, 227, 0.2); z-index: 2; border-top-width: 5px !important; }
+        .today-badge { position: absolute; top: -12px; right: 10px; background: var(--accent); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
         
@@ -48,14 +51,8 @@
         .checklist { list-style: none; padding: 0; }
         .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
 
-        /* History Table Styling */
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--card); }
-        .history-table th { text-align: left; color: var(--accent); border-bottom: 2px solid var(--border); padding: 12px; }
-        .history-table td { padding: 12px; border-bottom: 1px solid var(--border); }
-
         footer { margin-top: 50px; padding: 30px; border-top: 2px solid var(--border); text-align: center; }
-        .action-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .btn-save { background: var(--success); color: white; padding: 15px 30px; font-size: 1em; }
+        .btn-save { background: var(--success); color: white; padding: 15px 30px; font-size: 1.1em; }
         
         @media print { .no-print { display: none !important; } }
     </style>
@@ -64,7 +61,7 @@
 
     <header class="no-print">
         <div class="header-left">
-            <h1 id="rota-display-title" style="margin:0">Rota 1: Focus Active</h1>
+            <h1 id="rota-display-title" style="margin:0">Rota Cycle: Active</h1>
             <p id="date-display" style="margin:5px 0; opacity:0.7"></p>
             
             <div class="tool-box">
@@ -76,7 +73,6 @@
             <div class="tool-box">
                 <input type="time" id="alarm-time">
                 <button onclick="setAlarm()" class="mini-btn">Set Alarm</button>
-                <button onclick="resetAlarm()" class="mini-btn reset-btn">Reset</button>
                 <button id="stop-alarm-btn" onclick="stopAlarmSound()" class="stop-alarm-active" style="display:none;">STOP ALARM</button>
             </div>
         </div>
@@ -103,23 +99,15 @@
             </div>
             <ul id="target-list" class="checklist"></ul>
         </section>
-
-        <section class="targets-section no-print" style="border-style: solid; border-color: var(--border);">
-            <h3>📜 Rota History Ledger</h3>
-            <div id="history-list">
-                <p style="opacity: 0.6; text-align: center; padding: 20px;">No completed rotas archived yet.</p>
-            </div>
-        </section>
     </main>
 
     <footer class="no-print">
-        <div style="font-size: 1.5em; font-weight: bold;">
-            Rota Total Progress: <span id="weekly-total" style="color:var(--success)">0.0</span> hrs
+        <div style="font-size: 1.5em; font-weight: bold; margin-bottom: 20px;">
+            Total Progress: <span id="weekly-total" style="color:var(--success)">0.0</span> hrs
         </div>
-        <div class="action-group">
+        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
             <button class="btn-save" onclick="saveData()">💾 SAVE PROGRESS</button>
-            <button class="mini-btn" style="background:#34495e" onclick="exportCSV()">📊 EXPORT EXCEL</button>
-            <button class="mini-btn" style="background:#e67e22" onclick="startNewRota()">🔄 START NEW ROTA</button>
+            <button class="mini-btn" style="background:#e67e22; padding: 15px 25px;" onclick="startNewRota()">🔄 START NEW 8-DAY CYCLE</button>
             <button class="mini-btn" style="background:#7f8c8d" onclick="window.print()">🖨️ PRINT PDF</button>
         </div>
     </footer>
@@ -127,42 +115,49 @@
     <audio id="alarm-sound" loop src="https://actions.google.com/sounds/v1/alarms/alarm_clock_ringing_beeps.ogg"></audio>
 
     <script>
-        // ROTA DATA DEFINITION
         const shiftData = [
-            { id: "M1", name: "Morning D1", color: "#FF6384", tasks: [{n:"Office/Core", h:3}, {n:"Essay Writing", h:1.5}, {n:"Current Affairs", h:1.5}] },
-            { id: "M2", name: "Morning D2", color: "#36A2EB", tasks: [{n:"Office/Core", h:3}, {n:"Essay Writing", h:1.5}, {n:"Current Affairs", h:1.5}] },
-            { id: "E3", name: "Evening D3", color: "#FFCE56", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office/Core", h:3}] },
-            { id: "E4", name: "Evening D4", color: "#4BC0C0", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:3.5}, {n:"Office/Core", h:3}] },
-            { id: "N1", name: "Night 1st", color: "#9966FF", tasks: [{n:"Study 1", h:2.5}, {n:"Study 2", h:4.5}, {n:"Office/Core", h:3}] },
-            { id: "N2", name: "Night 2nd", color: "#FF9F40", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}, {n:"Office/Core", h:3}] },
-            { id: "OD", name: "Off Day", color: "#95a5a6", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:2.5}] },
-            { id: "GS", name: "General", color: "#27ae60", tasks: [{n:"Study 1", h:3}, {n:"Study 2", h:3.5}] }
+            { id: "M1", name: "Morning D1", color: "#FF6384", tasks: [{n:"Office/Core", h:3}, {n:"Daily Essay", h:1.5}, {n:"Current Affairs", h:1.5}, {n:"Fitness/Yoga", h:1}] },
+            { id: "M2", name: "Morning D2", color: "#36A2EB", tasks: [{n:"Office/Core", h:3}, {n:"Daily Essay", h:1.5}, {n:"Current Affairs", h:1.5}, {n:"Fitness/Yoga", h:1}] },
+            { id: "E3", name: "Evening D3", color: "#FFCE56", tasks: [{n:"Core Study", h:2.5}, {n:"Current Affairs", h:2}, {n:"Office/Core", h:3}] },
+            { id: "E4", name: "Evening D4", color: "#4BC0C0", tasks: [{n:"Core Study", h:2.5}, {n:"Current Affairs", h:2}, {n:"Office/Core", h:3}] },
+            { id: "N1", name: "Night 1st", color: "#9966FF", tasks: [{n:"Essay Practice", h:2.5}, {n:"Static Revision", h:4.5}, {n:"Office/Core", h:3}] },
+            { id: "N2", name: "Night 2nd", color: "#FF9F40", tasks: [{n:"Essay Practice", h:2.5}, {n:"Static Revision", h:3.5}, {n:"Office/Core", h:3}] },
+            { id: "OD", name: "Off Day", color: "#95a5a6", tasks: [{n:"Deep Revision", h:3}, {n:"Weekly Review", h:2.5}, {n:"Cooking/Social", h:2}] },
+            { id: "GS", name: "General", color: "#27ae60", tasks: [{n:"General Prep", h:3}, {n:"Mock Test", h:3.5}] }
         ];
 
-        const quotes = [
-            "Your only limit is your mind.",
-            "Focus on being productive instead of busy.",
-            "Success is the sum of small efforts repeated daily.",
-            "Don't stop until you're proud.",
-            "Start where you are. Use what you have. Do what you can."
-        ];
+        const quotes = ["Your only limit is your mind.", "Focus on being productive instead of busy.", "Success is the sum of small efforts repeated daily.", "Don't stop until you're proud.", "Discipline is choosing between what you want now and what you want most."];
 
         let pChart, tChart, swInterval, swSec = 0, alarmInt;
 
         window.onload = () => {
+            // Setup the Anchor Date for the Automatic Changer
+            if(!localStorage.getItem('rota_anchor_date')) {
+                localStorage.setItem('rota_anchor_date', new Date().toISOString());
+            }
+            
             document.getElementById('daily-quote').innerText = `"${quotes[new Date().getDay() % quotes.length]}"`;
             document.getElementById('date-display').innerText = new Date().toDateString();
-            document.getElementById('rota-display-title').innerText = `Rota ${localStorage.getItem('rota_num') || 1}: Active`;
             
-            renderUI();
-            initCharts();
             loadAllData();
         };
 
+        // THE AUTOMATIC ROTA CHANGER LOGIC
+        function getAutoDayIndex() {
+            const start = new Date(localStorage.getItem('rota_anchor_date'));
+            const now = new Date();
+            const diffInMs = Math.abs(now - start);
+            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+            return (diffInDays % 8); // Cycles 0 to 7 automatically
+        }
+
         function renderUI() {
+            const currentDayIdx = getAutoDayIndex();
             const container = document.getElementById('schedule-container');
+            
             container.innerHTML = shiftData.map((s, idx) => `
-                <div class="shift-card" style="border-top-color: ${s.color}">
+                <div class="shift-card ${idx === currentDayIdx ? 'active-day' : ''}" style="border-top-color: ${s.color}">
+                    ${idx === currentDayIdx ? '<span class="today-badge">TODAY</span>' : ''}
                     <h3 style="color: ${s.color}; margin-top:0">${s.name}</h3>
                     <table>
                         ${s.tasks.map(t => `
@@ -177,12 +172,14 @@
                     </table>
                 </div>
             `).join('');
+
+            document.getElementById('rota-display-title').innerText = `Rota ${localStorage.getItem('rota_num') || 1} | Day ${currentDayIdx + 1}`;
         }
 
         function initCharts() {
             const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
             pChart = new Chart(document.getElementById('progressChart'), {
-                type: 'line', data: { labels: shiftData.map(s => s.name), datasets: [{ label: '% Done', data: [], borderColor: '#0984e3', fill: true }] },
+                type: 'line', data: { labels: shiftData.map(s => s.name), datasets: [{ label: '%', data: [], borderColor: '#0984e3', tension: 0.4, fill: true }] },
                 options: opt
             });
             tChart = new Chart(document.getElementById('timeChart'), {
@@ -192,8 +189,7 @@
         }
 
         function updateCharts() {
-            let totalHrs = 0;
-            const pData = []; const tData = [];
+            let totalHrs = 0; const pData = []; const tData = [];
             shiftData.forEach((s, idx) => {
                 const total = document.querySelectorAll(`.t-check[data-shift="${idx}"]`);
                 const done = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
@@ -219,11 +215,8 @@
                 btn.innerText = "Stop";
             }
         }
-        function resetStopwatch() {
-            clearInterval(swInterval); swInterval = null; swSec = 0;
-            document.getElementById('stopwatch').innerText = "00:00:00";
-            document.getElementById('sw-btn').innerText = "Start Focus";
-        }
+
+        function resetStopwatch() { clearInterval(swInterval); swInterval = null; swSec = 0; document.getElementById('stopwatch').innerText = "00:00:00"; document.getElementById('sw-btn').innerText = "Start Focus"; }
 
         function setAlarm() {
             const time = document.getElementById('alarm-time').value;
@@ -239,14 +232,8 @@
                 }
             }, 1000);
         }
-        function stopAlarmSound() {
-            document.getElementById('alarm-sound').pause();
-            document.getElementById('alarm-sound').currentTime = 0;
-            document.getElementById('stop-alarm-btn').style.display = "none";
-        }
-        function resetAlarm() {
-            clearInterval(alarmInt); document.getElementById('alarm-time').value = ""; stopAlarmSound();
-        }
+
+        function stopAlarmSound() { document.getElementById('alarm-sound').pause(); document.getElementById('alarm-sound').currentTime = 0; document.getElementById('stop-alarm-btn').style.display = "none"; }
 
         function addTarget() {
             const inp = document.getElementById('target-text'); if(!inp.value) return;
@@ -255,84 +242,49 @@
             localStorage.setItem('next_day_targets', JSON.stringify(tgs));
             inp.value = ''; renderTargets();
         }
+
         function renderTargets() {
             const tgs = JSON.parse(localStorage.getItem('next_day_targets') || '[]');
             document.getElementById('target-list').innerHTML = tgs.map(t => `
                 <li>
                     <input type="checkbox" ${t.done?'checked':''} onchange="toggleT(${t.id})">
                     <span style="${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.txt}</span>
-                    <button onclick="delT(${t.id})" style="background:none;color:red;margin-left:auto">✕</button>
+                    <button onclick="delT(${t.id})" style="background:none;color:var(--danger);margin-left:auto">✕</button>
                 </li>`).join('');
         }
+
         function toggleT(id) {
             let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
             tgs = tgs.map(t => t.id === id ? {...t, done: !t.done} : t);
             localStorage.setItem('next_day_targets', JSON.stringify(tgs)); renderTargets();
         }
+
         function delT(id) {
             let tgs = JSON.parse(localStorage.getItem('next_day_targets'));
             localStorage.setItem('next_day_targets', JSON.stringify(tgs.filter(t => t.id !== id))); renderTargets();
         }
 
-        function renderHistory() {
-            const history = JSON.parse(localStorage.getItem('rota_history') || '[]');
-            const container = document.getElementById('history-list');
-            if (history.length === 0) return;
-            container.innerHTML = `
-                <table class="history-table">
-                    <thead>
-                        <tr><th>Cycle</th><th>Date</th><th>Total Hrs</th></tr>
-                    </thead>
-                    <tbody>
-                        ${history.map(item => `
-                            <tr>
-                                <td><b>Rota ${item.rota}</b></td>
-                                <td>${item.date}</td>
-                                <td style="color: var(--success); font-weight: bold;">${item.hours} hrs</td>
-                            </tr>
-                        `).reverse().join('')}
-                    </tbody>
-                </table>`;
-        }
-
-        function startNewRota() {
-            const currentTotal = document.getElementById('weekly-total').innerText;
-            const currentRota = localStorage.getItem('rota_num') || 1;
-            if(confirm(`Archive Rota ${currentRota} with ${currentTotal} hours and start a new cycle?`)) {
-                let history = JSON.parse(localStorage.getItem('rota_history') || '[]');
-                history.push({ rota: currentRota, hours: currentTotal, date: new Date().toLocaleDateString() });
-                localStorage.setItem('rota_history', JSON.stringify(history));
-                localStorage.setItem('rota_num', (parseInt(currentRota) + 1));
-                localStorage.removeItem('rota_progress_v4');
-                location.reload();
-            }
-        }
-
         function saveData() {
-            const progress = Array.from(document.querySelectorAll('.t-check')).map(c => c.checked);
-            localStorage.setItem('rota_progress_v4', JSON.stringify(progress));
-            alert("Success: All progress saved!");
+            const prog = Array.from(document.querySelectorAll('.t-check')).map(c => c.checked);
+            localStorage.setItem('rota_progress_v4', JSON.stringify(prog));
+            alert("Progress saved.");
         }
 
         function loadAllData() {
-            if(localStorage.getItem('theme_v4') === 'dark') toggleTheme();
+            if(localStorage.getItem('theme_v4') === 'dark') document.body.classList.add('dark-theme');
+            renderUI(); initCharts();
             const saved = JSON.parse(localStorage.getItem('rota_progress_v4'));
             if(saved) document.querySelectorAll('.t-check').forEach((c, i) => c.checked = saved[i] || false);
-            renderTargets(); updateCharts(); renderHistory();
+            renderTargets(); updateCharts();
         }
 
-        function exportCSV() {
-            let csv = "Shift,Hours\n";
-            shiftData.forEach((s, idx) => {
-                const checked = document.querySelectorAll(`.t-check[data-shift="${idx}"]:checked`);
-                let h = 0; checked.forEach(c => h += parseFloat(c.dataset.hrs));
-                csv += `${s.name},${h}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = window.URL.createObjectURL(blob);
-            a.download = `Study_Report_Rota_${localStorage.getItem('rota_num') || 1}.csv`;
-            a.click();
+        function startNewRota() {
+            if(confirm("Start a brand new 8-day cycle? This will reset the day counter to Day 1.")) {
+                localStorage.setItem('rota_num', (parseInt(localStorage.getItem('rota_num') || 1) + 1));
+                localStorage.setItem('rota_anchor_date', new Date().toISOString());
+                localStorage.removeItem('rota_progress_v4');
+                location.reload();
+            }
         }
 
         function toggleTheme() {
